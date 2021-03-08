@@ -7,16 +7,19 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import kr.co.theplay.dto.GalleryDto;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @NoArgsConstructor
@@ -78,6 +81,19 @@ public class S3Service {
 ex) S3 키 값(fileName 변수)이 sample.jpg라 할 때, 이미지는 "dq582wpwqowa9.cloudfront.net/sample.jpg" 에서 가져오게 됩니다
 
          */
+    }
+
+    public String uploadMultipleFiles (String currentFilePath, MultipartFile file) throws IOException {
+        SimpleDateFormat date = new SimpleDateFormat("yyyymmddHHmmss");
+        String fileName = file.getOriginalFilename() + "-" + date.format(new Date());
+
+        // upload
+        s3Client.putObject(new PutObjectRequest(bucket, fileName, file.getInputStream(), null)
+                .withCannedAcl(CannedAccessControlList.PublicRead));
+
+        // 단순 업로드용
+        //return s3Client.getUrl(bucket, fileName).toString();
+        return fileName; // fileName 변수만 반환,
     }
 
     public void delete(String currentFilePath) throws IOException {
